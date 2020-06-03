@@ -56,11 +56,47 @@ export const authFetch = async (...args: Parameters<typeof fetch>) => {
   }
 };
 
+export interface User {
+  email: string;
+  name: string;
+  avatar_url: string;
+}
+
+const getUser = async () => {
+  const resp = await authFetch(`${API}/me`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = (await resp.json()) as User;
+  return data;
+};
+
+export const restoreSession = getUser;
+
+export const signUp = async (email: string, name: string, password: string) => {
+  const body = { email, name, password };
+
+  const resp = await fetch(`${API}/users`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!resp.ok) {
+    throw new Error("Bad sign up");
+  }
+  const data = (await resp.json()) as { jwt: string; refresh_token: string };
+  jwt = data.jwt;
+  // ideally we would store this in a HttpOnly cookie, but the API does not provide this
+  localStorage.setItem("refresh_token", data.refresh_token);
+  return getUser();
+};
+
 export const signIn = async (email: string, password: string) => {
-  const body = {
-    email,
-    password,
-  };
+  const body = { email, password };
+
   const resp = await fetch(`${API}/access-tokens`, {
     method: "POST",
     headers: {
@@ -68,13 +104,18 @@ export const signIn = async (email: string, password: string) => {
     },
     body: JSON.stringify(body),
   });
+
+  if (!resp.ok) {
+    throw new Error("Bad sign in");
+  }
   const data = (await resp.json()) as { jwt: string; refresh_token: string };
   jwt = data.jwt;
   // ideally we would store this in a HttpOnly cookie, but the API does not provide this
   localStorage.setItem("refresh_token", data.refresh_token);
+  return getUser();
 };
 
-export const signOut = async () => {
-  localStorage.removeItem("refreshToken");
+export const signOut = () => {
+  localStorage.removeItem("refresh_token");
   jwt = null;
 };
