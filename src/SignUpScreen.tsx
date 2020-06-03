@@ -18,7 +18,7 @@ export const SignUpScreen = () => {
     auth.signUp("jack-black@codementor.io", "Jack Black", "the-Secret-123");
   };
 
-  if (auth.status === "signed_in" || auth.status === "restoring_session") {
+  if (auth.user) {
     return <Redirect to="/" />;
   }
 
@@ -33,8 +33,6 @@ export const SignUpScreen = () => {
         <p>
           Already have an account?<Link to="/signin">Sign in</Link>
         </p>
-        {auth.status === "signing_up" && <p>Signing up...</p>}
-        {auth.status === "bad_sign_up" && <p>Email has already been taken</p>}
       </main>
     </>
   );

@@ -1,7 +1,12 @@
+import { noop } from "../utils";
+
 import { API } from "./config";
+import { User, APIError } from "./types";
 
 // store the JWT in memory rather than localStorage, as it may contain sensitive information
 let jwt: string | null = null;
+let _onSignIn: (user: User) => void = noop;
+let _onSignOut: () => void = noop;
 
 const fetchWithJwt = async (...args: Parameters<typeof fetch>) => {
   if (!jwt) {
@@ -17,8 +22,10 @@ const fetchWithJwt = async (...args: Parameters<typeof fetch>) => {
     },
   };
   const resp = await fetch(requestInfo, newInit);
+
   if (!resp.ok) {
-    throw new Error("JWT invalid");
+    const data = (await resp.json()) as APIError;
+    throw new Error(data.reason);
   }
   return resp;
 };
@@ -28,6 +35,8 @@ const refresh = async () => {
   if (!refreshToken) {
     throw new Error("No refresh token found");
   }
+  console.log("refresh token valid");
+
   const body = {
     refresh_token: refreshToken,
   };
@@ -36,8 +45,10 @@ const refresh = async () => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+
   if (!resp.ok) {
-    throw new Error("Refresh token invalid");
+    const data = (await resp.json()) as APIError;
+    throw new Error(data.reason);
   }
   const data = (await resp.json()) as { jwt: string };
   jwt = data.jwt;
@@ -49,18 +60,12 @@ export const authFetch = async (...args: Parameters<typeof fetch>) => {
     const resp = await fetchWithJwt(...args);
     return resp;
   } catch {
-    // if the jwt was invalid, refresh the token and try with a new one
+    // if jwt is invalid, refresh it
     await refresh();
     const resp = await fetchWithJwt(...args);
     return resp;
   }
 };
-
-export interface User {
-  email: string;
-  name: string;
-  avatar_url: string;
-}
 
 const getUser = async () => {
   const resp = await authFetch(`${API}/me`, {
@@ -71,7 +76,14 @@ const getUser = async () => {
   return data;
 };
 
-export const restoreSession = getUser;
+export const restoreSession = async () => {
+  try {
+    const user = await getUser();
+    _onSignIn(user);
+  } catch {
+    _onSignOut();
+  }
+};
 
 export const signUp = async (email: string, name: string, password: string) => {
   const body = { email, name, password };
@@ -85,13 +97,15 @@ export const signUp = async (email: string, name: string, password: string) => {
   });
 
   if (!resp.ok) {
-    throw new Error("Bad sign up");
+    const data = (await resp.json()) as APIError;
+    throw new Error(data.reason);
   }
   const data = (await resp.json()) as { jwt: string; refresh_token: string };
   jwt = data.jwt;
   // ideally we would store this in a HttpOnly cookie, but the API does not provide this
   localStorage.setItem("refresh_token", data.refresh_token);
-  return getUser();
+  const user = await getUser();
+  _onSignIn(user);
 };
 
 export const signIn = async (email: string, password: string) => {
@@ -106,16 +120,27 @@ export const signIn = async (email: string, password: string) => {
   });
 
   if (!resp.ok) {
-    throw new Error("Bad sign in");
+    const data = (await resp.json()) as APIError;
+    throw new Error(data.reason);
   }
   const data = (await resp.json()) as { jwt: string; refresh_token: string };
   jwt = data.jwt;
   // ideally we would store this in a HttpOnly cookie, but the API does not provide this
   localStorage.setItem("refresh_token", data.refresh_token);
-  return getUser();
+  const user = await getUser();
+  _onSignIn(user);
 };
 
 export const signOut = () => {
   localStorage.removeItem("refresh_token");
   jwt = null;
+  _onSignOut();
+};
+
+export const init = (
+  onSignIn: (user: User) => void = noop,
+  onSignOut: () => void = noop,
+) => {
+  _onSignIn = onSignIn;
+  _onSignOut = onSignOut;
 };

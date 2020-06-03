@@ -12,7 +12,7 @@ export const SignInScreen = () => {
   const badSignIn = () =>
     auth.signIn("jack-black_001@codementor.io", "the-Secret-1234");
 
-  if (auth.status === "signed_in" || auth.status === "restoring_session") {
+  if (auth.user) {
     return <Redirect to="/" />;
   }
 
@@ -27,10 +27,6 @@ export const SignInScreen = () => {
         <p>
           Don't have an account?<Link to="/signup">Sign up</Link>
         </p>
-        {auth.status === "signing_in" && <p>Signing in...</p>}
-        {auth.status === "bad_sign_in" && (
-          <p>Either email or password is incorrect</p>
-        )}
       </main>
     </>
   );
