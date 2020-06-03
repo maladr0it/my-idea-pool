@@ -1,13 +1,13 @@
 import { API } from "./config";
 import { authFetch } from "./auth";
 
+export { signIn, signOut } from "./auth";
+
 export interface User {
   email: string;
   name: string;
   avatar_url: string;
 }
-
-export { signIn } from "./auth";
 
 export const getUser = async () => {
   const resp = await authFetch(`${API}/me`, {

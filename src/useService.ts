@@ -1,7 +1,7 @@
-import { useReducer, useEffect } from "react";
+import { useReducer, useRef, useCallback } from "react";
 
 interface ServiceState<T> {
-  status: "idle" | "loading" | "error";
+  status: "initial" | "loading" | "error" | "success";
   data: T | null;
 }
 
@@ -17,10 +17,10 @@ type ServiceAction<T> =
       type: "request_failed";
     }
   | {
-      type: "data_cleared";
+      type: "service_reset";
     };
 
-type Service<T> = () => Promise<T>;
+type Service<T, U extends any[]> = (...args: U) => Promise<T>;
 
 const serviceReducer = <T>(
   state: ServiceState<T>,
@@ -31,50 +31,72 @@ const serviceReducer = <T>(
       return { ...state, status: "loading" };
     }
     case "request_succeeded": {
-      return { status: "idle", data: action.data };
+      return { status: "success", data: action.data };
     }
     case "request_failed": {
       return { ...state, status: "error" };
     }
-    case "data_cleared": {
-      return { status: "idle", data: null };
+    case "service_reset": {
+      return { status: "initial", data: null };
     }
   }
 };
 
-export const useService = <T>(service: Service<T>) => {
+export const useService = <T, U extends any[]>(service: Service<T, U>) => {
+  const lastRequest = useRef<Promise<T>>();
   const [state, dispatch] = useReducer<
     (state: ServiceState<T>, action: ServiceAction<T>) => ServiceState<T>
   >(serviceReducer, {
-    status: "idle",
+    status: "initial",
     data: null,
   });
 
-  const clearData = () => dispatch({ type: "data_cleared" });
+  const reset = () => dispatch({ type: "service_reset" });
 
-  useEffect(() => {
-    let cancelled = false;
+  const call = useCallback(
+    async (...args: Parameters<typeof service>) => {
+      let request: Promise<T> | null = null;
 
-    const callService = async () => {
       try {
         dispatch({ type: "request_started" });
-        const data = await service();
-        if (!cancelled) {
+        request = service(...args);
+        lastRequest.current = request;
+        const data = await request;
+        if (request === lastRequest.current) {
           dispatch({ type: "request_succeeded", data });
         }
       } catch {
-        if (!cancelled) {
+        if (request === lastRequest.current) {
           dispatch({ type: "request_failed" });
         }
       }
-    };
+    },
+    [service],
+  );
 
-    callService();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [service]);
-
-  return { ...state, clearData };
+  return { ...state, call, reset };
 };
+
+// useEffect(() => {
+//   let cancelled = false;
+
+//   const callService = async () => {
+//     try {
+//       dispatch({ type: "request_started" });
+//       const data = await service();
+//       if (!cancelled) {
+//         dispatch({ type: "request_succeeded", data });
+//       }
+//     } catch {
+//       if (!cancelled) {
+//         dispatch({ type: "request_failed" });
+//       }
+//     }
+//   };
+
+//   callService();
+
+//   return () => {
+//     cancelled = true;
+//   };
+// }, [service]);
