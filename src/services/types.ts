@@ -4,6 +4,13 @@ export interface User {
   avatar_url: string;
 }
 
-export interface APIError {
+export interface ErrorData {
   reason: string;
+}
+
+export class APIError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "APIError";
+  }
 }

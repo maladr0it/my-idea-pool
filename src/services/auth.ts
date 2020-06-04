@@ -1,7 +1,7 @@
 import { noop } from "../utils";
 
 import { API } from "./config";
-import { User, APIError } from "./types";
+import { User, ErrorData, APIError } from "./types";
 
 // store the JWT in memory rather than localStorage, as it may contain sensitive information
 let jwt: string | null = null;
@@ -24,19 +24,18 @@ const fetchWithJwt = async (...args: Parameters<typeof fetch>) => {
   const resp = await fetch(requestInfo, newInit);
 
   if (!resp.ok) {
-    const data = (await resp.json()) as APIError;
-    throw new Error(data.reason);
+    const data = (await resp.json()) as ErrorData;
+    throw new APIError(data.reason);
   }
   return resp;
 };
 
 const refresh = async () => {
   const refreshToken = localStorage.getItem("refresh_token");
+
   if (!refreshToken) {
     throw new Error("No refresh token found");
   }
-  console.log("refresh token valid");
-
   const body = {
     refresh_token: refreshToken,
   };
@@ -47,8 +46,8 @@ const refresh = async () => {
   });
 
   if (!resp.ok) {
-    const data = (await resp.json()) as APIError;
-    throw new Error(data.reason);
+    const data = (await resp.json()) as ErrorData;
+    throw new APIError(data.reason);
   }
   const data = (await resp.json()) as { jwt: string };
   jwt = data.jwt;
@@ -97,8 +96,8 @@ export const signUp = async (email: string, name: string, password: string) => {
   });
 
   if (!resp.ok) {
-    const data = (await resp.json()) as APIError;
-    throw new Error(data.reason);
+    const data = (await resp.json()) as ErrorData;
+    throw new APIError(data.reason);
   }
   const data = (await resp.json()) as { jwt: string; refresh_token: string };
   jwt = data.jwt;
@@ -120,8 +119,8 @@ export const signIn = async (email: string, password: string) => {
   });
 
   if (!resp.ok) {
-    const data = (await resp.json()) as APIError;
-    throw new Error(data.reason);
+    const data = (await resp.json()) as ErrorData;
+    throw new APIError(data.reason);
   }
   const data = (await resp.json()) as { jwt: string; refresh_token: string };
   jwt = data.jwt;

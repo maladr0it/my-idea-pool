@@ -1,8 +1,9 @@
-import { useReducer, useRef, useCallback } from "react";
+import { useReducer, useRef, useCallback, useEffect } from "react";
 
 interface ServiceState<T> {
-  status: "initial" | "loading" | "error" | "success";
+  loading: boolean;
   data: T | null;
+  error: Error | null;
 }
 
 type ServiceAction<T> =
@@ -15,6 +16,7 @@ type ServiceAction<T> =
     }
   | {
       type: "request_failed";
+      error: Error;
     }
   | {
       type: "service_reset";
@@ -28,16 +30,16 @@ const serviceReducer = <T>(
 ): ServiceState<T> => {
   switch (action.type) {
     case "request_started": {
-      return { ...state, status: "loading" };
+      return { ...state, loading: true, error: null };
     }
     case "request_succeeded": {
-      return { status: "success", data: action.data };
+      return { loading: false, data: action.data, error: null };
     }
     case "request_failed": {
-      return { ...state, status: "error" };
+      return { ...state, loading: false, error: action.error };
     }
     case "service_reset": {
-      return { status: "initial", data: null };
+      return { loading: false, error: null, data: null };
     }
   }
 };
@@ -47,8 +49,9 @@ export const useService = <T, U extends any[]>(service: Service<T, U>) => {
   const [state, dispatch] = useReducer<
     (state: ServiceState<T>, action: ServiceAction<T>) => ServiceState<T>
   >(serviceReducer, {
-    status: "initial",
+    loading: false,
     data: null,
+    error: null,
   });
 
   const reset = () => dispatch({ type: "service_reset" });
@@ -65,38 +68,21 @@ export const useService = <T, U extends any[]>(service: Service<T, U>) => {
         if (request === lastRequest.current) {
           dispatch({ type: "request_succeeded", data });
         }
-      } catch {
+      } catch (error) {
         if (request === lastRequest.current) {
-          dispatch({ type: "request_failed" });
+          dispatch({ type: "request_failed", error });
         }
       }
     },
     [service],
   );
 
+  useEffect(() => {
+    // invalidate the last made request when the component unmounts
+    return () => {
+      lastRequest.current = undefined;
+    };
+  }, []);
+
   return { ...state, call, reset };
 };
-
-// useEffect(() => {
-//   let cancelled = false;
-
-//   const callService = async () => {
-//     try {
-//       dispatch({ type: "request_started" });
-//       const data = await service();
-//       if (!cancelled) {
-//         dispatch({ type: "request_succeeded", data });
-//       }
-//     } catch {
-//       if (!cancelled) {
-//         dispatch({ type: "request_failed" });
-//       }
-//     }
-//   };
-
-//   callService();
-
-//   return () => {
-//     cancelled = true;
-//   };
-// }, [service]);
