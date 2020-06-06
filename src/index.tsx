@@ -4,7 +4,7 @@ import ReactDOM from "react-dom";
 import * as _ from "styled-components/cssprop";
 import { createGlobalStyle } from "styled-components";
 
-import { BrowserRouter as Router } from "react-router-dom";
+import { HashRouter as Router } from "react-router-dom";
 import { AuthProvider } from "./AuthContext";
 
 import { App } from "./App";
