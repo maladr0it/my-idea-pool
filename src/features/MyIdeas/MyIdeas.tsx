@@ -1,6 +1,5 @@
 import React, { useEffect, useReducer } from "react";
 import styled from "styled-components/macro";
-import { Redirect } from "react-router-dom";
 
 import addIdeaImg from "../../assets/btn_addanidea.png";
 import { getErrorMessage } from "../../services/utils";
@@ -10,6 +9,8 @@ import { FlexRow, FlexCol } from "../../components";
 
 import { IdeasContext, reducer } from "./IdeasContext";
 import { IdeaList } from "./IdeaList";
+
+console.log("loading myideas...");
 
 const Message = styled(FlexCol)`
   align-items: center;
@@ -55,9 +56,7 @@ export const MyIdeas = () => {
     dispatch({ type: "draft_idea_created" });
   };
 
-  if (!auth.user) {
-    return <Redirect to="/signup" />;
-  }
+  console.log("myideas");
 
   return (
     <IdeasContext.Provider value={[state, dispatch]}>

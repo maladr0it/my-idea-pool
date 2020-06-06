@@ -1,1 +1,3 @@
-export { MyIdeas } from "./MyIdeas";
+import { MyIdeas } from "./MyIdeas";
+
+export default MyIdeas;

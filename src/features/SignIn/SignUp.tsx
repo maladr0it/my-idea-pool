@@ -1,5 +1,4 @@
 import React from "react";
-import { Redirect } from "react-router-dom";
 import styled from "styled-components/macro";
 import { useForm } from "react-hook-form";
 
@@ -30,10 +29,6 @@ export const SignUp = () => {
   const onSubmit = (values: FormValues) => {
     service.call(values.email, values.name, values.password);
   };
-
-  if (auth.user) {
-    return <Redirect to="/" />;
-  }
 
   return (
     <form

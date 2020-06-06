@@ -1,11 +1,12 @@
-import React from "react";
-import { Switch, Route } from "react-router-dom";
+import React, { Suspense } from "react";
+import { Switch, Route, Redirect } from "react-router-dom";
 import "styled-components/macro";
 
 import { useAuth } from "./AuthContext";
 import { PageNav } from "./components/PageNav";
 import { SignUp, SignIn } from "./features/SignIn";
-import { MyIdeas } from "./features/MyIdeas";
+
+const MyIdeas = React.lazy(() => import("./features/MyIdeas"));
 
 export const App = () => {
   const auth = useAuth();
@@ -24,17 +25,19 @@ export const App = () => {
     >
       <PageNav />
       <main>
-        <Switch>
-          <Route path="/signup">
-            <SignUp />
-          </Route>
-          <Route path="/signin">
-            <SignIn />
-          </Route>
-          <Route path="/">
-            <MyIdeas />
-          </Route>
-        </Switch>
+        <Suspense fallback={null}>
+          <Switch>
+            <Route path="/signup">
+              {!auth.user ? <SignUp /> : <Redirect to="/" />}
+            </Route>
+            <Route path="/signin">
+              {!auth.user ? <SignIn /> : <Redirect to="/" />}
+            </Route>
+            <Route path="/">
+              {auth.user ? <MyIdeas /> : <Redirect to="/signup" />}
+            </Route>
+          </Switch>
+        </Suspense>
       </main>
     </div>
   );
