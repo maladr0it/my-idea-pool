@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 
 import * as ideasService from "../../services/ideas";
+import { useService } from "../../useService";
 
 import { IdeaForm, FormValues } from "./IdeaForm";
 import { useIdeasContext } from "./IdeasContext";
@@ -20,23 +21,16 @@ interface Props {
 
 export const AddIdeaForm = ({ row }: Props) => {
   const [, dispatch] = useIdeasContext();
-  const [submitting, setSubmitting] = useState(false);
 
-  const addIdea = async (values: FormValues) => {
-    try {
-      setSubmitting(true);
-      const idea = await ideasService.createIdea(
-        values.content,
-        values.impact,
-        values.ease,
-        values.confidence,
-      );
-      dispatch({ type: "idea_added", idea });
-    } catch {
-      // don't display errors, not within project scope
-      setSubmitting(false);
-    }
-  };
+  const service = useService(async (values: FormValues) => {
+    const idea = await ideasService.createIdea(
+      values.content,
+      values.impact,
+      values.ease,
+      values.confidence,
+    );
+    dispatch({ type: "idea_added", idea });
+  });
 
   const cancelEdit = () => {
     dispatch({ type: "editing_cancelled" });
@@ -47,8 +41,8 @@ export const AddIdeaForm = ({ row }: Props) => {
       id={FORM_ID}
       row={row}
       {...DEFAULT_IDEA_VALUES}
-      submitting={submitting}
-      onSubmit={addIdea}
+      submitting={service.loading}
+      onSubmit={service.call}
       onCancel={cancelEdit}
     />
   );
