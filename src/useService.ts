@@ -19,7 +19,8 @@ type ServiceAction<T> =
       error: Error;
     }
   | {
-      type: "service_reset";
+      type: "data_updated";
+      data: T;
     };
 
 type Service<T, U extends any[]> = (...args: U) => Promise<T>;
@@ -38,8 +39,8 @@ const serviceReducer = <T>(
     case "request_failed": {
       return { ...state, loading: false, error: action.error };
     }
-    case "service_reset": {
-      return { loading: false, error: null, data: null };
+    case "data_updated": {
+      return { loading: false, data: action.data, error: null };
     }
   }
 };
@@ -54,12 +55,9 @@ export const useService = <T, U extends any[]>(service: Service<T, U>) => {
     error: null,
   });
 
-  const reset = () => dispatch({ type: "service_reset" });
-
   const call = useCallback(
     async (...args: Parameters<typeof service>) => {
       let request: Promise<T> | null = null;
-
       try {
         dispatch({ type: "request_started" });
         request = service(...args);
@@ -69,6 +67,7 @@ export const useService = <T, U extends any[]>(service: Service<T, U>) => {
           dispatch({ type: "request_succeeded", data });
         }
       } catch (error) {
+        console.log(error);
         if (request === lastRequest.current) {
           dispatch({ type: "request_failed", error });
         }
@@ -77,6 +76,8 @@ export const useService = <T, U extends any[]>(service: Service<T, U>) => {
     [service],
   );
 
+  const setData = (data: T) => dispatch({ type: "data_updated", data });
+
   useEffect(() => {
     // invalidate the last made request when the component unmounts
     return () => {
@@ -84,5 +85,5 @@ export const useService = <T, U extends any[]>(service: Service<T, U>) => {
     };
   }, []);
 
-  return { ...state, call, reset };
+  return { ...state, call, setData };
 };

@@ -25,7 +25,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   //   avatar_url:
   //     "https://gravatar.com/avatar/2758c1887d872fe344598d9175165504?s=200",
   // });
-  // const [user, setUser] = useState(null);
 
   const [initialized, setInitialized] = useState(false);
   const [user, setUser] = useState<User | null>(null);

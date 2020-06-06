@@ -15,7 +15,7 @@ const GlobalStyle = createGlobalStyle`
   :root {
     --primary: rgba(0,168,67,1);
     --onPrimary: #fff;
-    --neutral: rgba(255,255,255,0.20);
+    --neutral: rgba(42,56,66,0.2);
     --background: #fff;
     --onBackground: #2A3842;
     --warning: tomato;

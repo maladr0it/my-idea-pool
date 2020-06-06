@@ -12,6 +12,12 @@ export const Container = styled(FlexCol)`
   padding: 36px 0;
   text-align: center;
   background-color: var(--primary);
+  align-items: center;
+`;
+
+const NavItem = styled(FlexCol)`
+  align-items: center;
+  padding: 0 36px;
 `;
 
 const HomeLink = styled(Link)`
@@ -21,6 +27,7 @@ const HomeLink = styled(Link)`
 `;
 
 const LogoutButton = styled.button`
+  margin-top: 8px;
   font-size: 16px;
   border: none;
   color: rgba(42, 56, 66, 0.65);
@@ -35,70 +42,53 @@ const AvatarContainer = styled.div`
   place-items: center;
   border-radius: 50%;
   overflow: hidden;
-  background-color: var(--neutral);
+  background-color: rgba(255, 255, 255, 0.25);
 `;
-
-const Divider = () => {
-  return (
-    <div
-      css={`
-        width: 100%;
-        padding: 0 24px;
-      `}
-    >
-      <div
-        css={`
-          border-top: 1px solid var(--neutral);
-        `}
-      />
-    </div>
-  );
-};
 
 export const PageNav = () => {
   const auth = useAuth();
 
   return (
     <Container as="nav" gap="36px">
-      <HomeLink to="/">
-        <img
-          src={logoImg}
-          alt="My Idea Pool logo"
-          css={`
-            width: 64px;
-          `}
-        />
-        <div
-          css={`
-            margin-top: 12px;
-            padding: 0 36px;
-          `}
-        >
-          The Idea Pool
-        </div>
-      </HomeLink>
-      {auth.user && (
-        <>
-          <Divider />
-          <FlexCol
-            gap="8px"
+      <NavItem>
+        <HomeLink to="/">
+          <img
+            src={logoImg}
+            alt="My Idea Pool logo"
             css={`
-              align-items: center;
+              width: 64px;
+            `}
+          />
+          <div
+            css={`
+              margin-top: 12px;
             `}
           >
+            The Idea Pool
+          </div>
+        </HomeLink>
+      </NavItem>
+      {auth.user && (
+        <>
+          <div
+            css={`
+              border-top: 1px solid rgba(255, 255, 255, 0.25);
+              width: calc(100% - 48px);
+            `}
+          />
+          <NavItem>
             <AvatarContainer>
               <img
                 src={auth.user.avatar_url}
                 alt={auth.user.name}
                 css={`
-                  display: block;
                   width: 100%;
                 `}
               />
             </AvatarContainer>
             <div
               css={`
-                padding: 0 36px;
+                margin-top: 8px;
                 font-size: 20px;
                 color: var(--onPrimary);
               `}
@@ -106,7 +96,7 @@ export const PageNav = () => {
               {auth.user.name}
             </div>
             <LogoutButton onClick={auth.signOut}>Log out</LogoutButton>
-          </FlexCol>
+          </NavItem>
         </>
       )}
     </Container>

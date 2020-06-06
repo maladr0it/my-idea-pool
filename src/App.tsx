@@ -1,31 +1,41 @@
 import React from "react";
 import { Switch, Route } from "react-router-dom";
+import "styled-components/macro";
 
 import { useAuth } from "./AuthContext";
-import { Page } from "./components/Page";
+import { PageNav } from "./components/PageNav";
 import { SignUp, SignIn } from "./features/SignIn";
-import { IdeasList } from "./features/IdeasList";
+import { MyIdeas } from "./features/MyIdeas";
 
 export const App = () => {
   const auth = useAuth();
 
   return (
-    <Page>
-      {auth.initialized ? (
-        <Switch>
-          <Route path="/signup">
-            <SignUp />
-          </Route>
-          <Route path="/signin">
-            <SignIn />
-          </Route>
-          <Route path="/">
-            <IdeasList />
-          </Route>
-        </Switch>
-      ) : (
-        <div>Loading...</div>
-      )}
-    </Page>
+    <div
+      css={`
+        min-height: 100%;
+        display: grid;
+        grid-template-columns: auto 1fr;
+      `}
+    >
+      <PageNav />
+      <main>
+        {auth.initialized ? (
+          <Switch>
+            <Route path="/signup">
+              <SignUp />
+            </Route>
+            <Route path="/signin">
+              <SignIn />
+            </Route>
+            <Route path="/">
+              <MyIdeas />
+            </Route>
+          </Switch>
+        ) : (
+          <div>Loading...</div>
+        )}
+      </main>
+    </div>
   );
 };

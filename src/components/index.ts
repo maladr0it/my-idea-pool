@@ -1,6 +1,7 @@
 export { FlexRow } from "./FlexRow";
 export { FlexCol } from "./FlexCol";
-export { Page } from "./Page";
-export { TextInput } from "./TextInput";
 export { PrimaryButton } from "./PrimaryButton";
+export { IconButton } from "./IconButton";
 export { Link } from "./Link";
+export { TextInput } from "./TextInput";
+export { PageNav } from "./PageNav";

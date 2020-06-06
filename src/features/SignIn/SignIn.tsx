@@ -26,7 +26,7 @@ export const SignIn = () => {
   const form = useForm<FormValues>();
   const service = useService(auth.signIn);
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = (values: FormValues) => {
     service.call(values.email, values.password);
   };
 
@@ -39,14 +39,14 @@ export const SignIn = () => {
       onSubmit={form.handleSubmit(onSubmit)}
       css={`
         max-width: 480px;
-        margin: 72px auto 0;
+        margin: 96px auto 0;
       `}
     >
-      <H1>Sign up</H1>
+      <H1>Log in</H1>
       <FlexCol
         gap="24px"
         css={`
-          margin-top: 32px;
+          margin-top: 48px;
         `}
       >
         <FormInput
@@ -77,6 +77,7 @@ export const SignIn = () => {
           disabled={service.loading}
           css={`
             min-width: 150px;
+            margin-right: 12px;
           `}
         >
           Log in

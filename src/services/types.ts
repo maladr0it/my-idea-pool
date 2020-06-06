@@ -4,7 +4,17 @@ export interface User {
   avatar_url: string;
 }
 
-export interface ErrorData {
+export interface Idea {
+  id: string;
+  content: string;
+  impact: number;
+  ease: number;
+  confidence: number;
+  average_score: number;
+  created_at: number;
+}
+
+export interface APIErrorData {
   reason: string;
 }
 
