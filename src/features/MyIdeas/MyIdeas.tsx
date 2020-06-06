@@ -1,21 +1,21 @@
-import React, { createContext, useEffect, useReducer } from "react";
+import React, { useEffect, useReducer } from "react";
 import styled from "styled-components/macro";
 import { Redirect } from "react-router-dom";
 
-// this should really be an svg...
 import addIdeaImg from "../../assets/btn_addanidea.png";
 import { getErrorMessage } from "../../services/utils";
 import * as ideasService from "../../services/ideas";
 import { useAuth } from "../../AuthContext";
-import { FlexRow } from "../../components";
+import { FlexRow, FlexCol } from "../../components";
 
 import { IdeasContext, reducer } from "./IdeasContext";
 import { IdeaList } from "./IdeaList";
 
-import {
-  DEBUG_CLEAR_JWT,
-  DEBUG_CLEAR_REFRESH_TOKEN,
-} from "../../services/auth";
+const Message = styled(FlexCol)`
+  align-items: center;
+  margin-top: 144px;
+  font-size: 20px;
+`;
 
 const AddIdeaButton = styled.button`
   margin-left: auto;
@@ -28,8 +28,9 @@ const AddIdeaButton = styled.button`
 export const MyIdeas = () => {
   const auth = useAuth();
   const [state, dispatch] = useReducer(reducer, {
-    status: "idle",
+    loading: false,
     error: null,
+    addingIdea: false,
     editingId: null,
     ideas: [],
   });
@@ -45,7 +46,7 @@ export const MyIdeas = () => {
           dispatch({ type: "ideas_request_failed", error });
         }
       };
-      // just get page 1
+      // just get page 1, pagination is out of scope for this project (no pages in design)
       getIdeas(1);
     }
   }, [auth.user]);
@@ -94,11 +95,12 @@ export const MyIdeas = () => {
             />
           </AddIdeaButton>
         </FlexRow>
-        {state.status !== "requesting_ideas" &&
-          state.status !== "requesting_ideas_error" && <IdeaList />}
-        {state.status === "requesting_ideas" && <div>Loading...</div>}
-        {state.status === "requesting_ideas_error" && (
-          <div>{getErrorMessage(state.error, "Something went wrong...")}</div>
+        {!state.loading && !state.error && <IdeaList />}
+        {state.loading && <Message>Loading...</Message>}
+        {state.error && (
+          <Message>
+            {getErrorMessage(state.error, "Something went wrong...")}
+          </Message>
         )}
       </div>
     </IdeasContext.Provider>

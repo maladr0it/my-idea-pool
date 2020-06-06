@@ -1,6 +1,9 @@
 import React from "react";
 import styled from "styled-components/macro";
 
+import { FlexCol } from "../../components";
+import bulbImg from "../../assets/bulb@2x.png";
+
 import { useIdeasContext } from "./IdeasContext";
 import { BaseCell } from "./BaseCell";
 import { AddIdeaForm } from "./AddIdeaForm";
@@ -27,8 +30,29 @@ export const IdeaList = () => {
   const sortedIdeas = [...state.ideas].sort(
     (a, b) => b.average_score - a.average_score,
   );
-  const addingIdea = state.status === "adding_idea";
-  const startingRow = addingIdea ? 3 : 2;
+  const startingRow = state.addingIdea ? 3 : 2;
+
+  if (!state.ideas.length && !state.addingIdea) {
+    return (
+      <FlexCol
+        gap="12px"
+        css={`
+          margin-top: 144px;
+          align-items: center;
+          font-size: 20px;
+        `}
+      >
+        <img
+          src={bulbImg}
+          alt=""
+          css={`
+            width: 64px;
+          `}
+        />
+        <div>Got ideas?</div>
+      </FlexCol>
+    );
+  }
 
   return (
     <Table>
@@ -68,7 +92,7 @@ export const IdeaList = () => {
       >
         Controls
       </ColHeader>
-      {addingIdea && <AddIdeaForm row={2} />}
+      {state.addingIdea && <AddIdeaForm row={2} />}
       {sortedIdeas.map((idea, i) =>
         state.editingId === idea.id ? (
           <EditIdeaForm key={idea.id} id={idea.id} row={startingRow + i} />

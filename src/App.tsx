@@ -10,6 +10,10 @@ import { MyIdeas } from "./features/MyIdeas";
 export const App = () => {
   const auth = useAuth();
 
+  if (!auth.initialized) {
+    return null;
+  }
+
   return (
     <div
       css={`
@@ -20,21 +24,17 @@ export const App = () => {
     >
       <PageNav />
       <main>
-        {auth.initialized ? (
-          <Switch>
-            <Route path="/signup">
-              <SignUp />
-            </Route>
-            <Route path="/signin">
-              <SignIn />
-            </Route>
-            <Route path="/">
-              <MyIdeas />
-            </Route>
-          </Switch>
-        ) : (
-          <div>Loading...</div>
-        )}
+        <Switch>
+          <Route path="/signup">
+            <SignUp />
+          </Route>
+          <Route path="/signin">
+            <SignIn />
+          </Route>
+          <Route path="/">
+            <MyIdeas />
+          </Route>
+        </Switch>
       </main>
     </div>
   );

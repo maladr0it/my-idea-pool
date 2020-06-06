@@ -2,37 +2,13 @@ import { createContext, useContext, Dispatch } from "react";
 
 import { Idea } from "../../services/types";
 
-type IdeasState =
-  | {
-      status: "idle";
-      error: null;
-      editingId: string | null;
-      ideas: Idea[];
-    }
-  | {
-      status: "requesting_ideas";
-      error: null;
-      editingId: null;
-      ideas: Idea[];
-    }
-  | {
-      status: "requesting_ideas_error";
-      error: Error;
-      editingId: null;
-      ideas: Idea[];
-    }
-  | {
-      status: "adding_idea";
-      error: null;
-      editingId: null;
-      ideas: Idea[];
-    }
-  | {
-      status: "editing_idea";
-      error: null;
-      editingId: string;
-      ideas: Idea[];
-    };
+type IdeasState = {
+  loading: boolean;
+  error: Error | null;
+  addingIdea: boolean;
+  editingId: string | null;
+  ideas: Idea[];
+};
 
 type IdeasAction =
   | {
@@ -70,20 +46,19 @@ type IdeasAction =
     };
 
 export const reducer = (state: IdeasState, action: IdeasAction): IdeasState => {
-  console.log(action);
-
   switch (action.type) {
     case "ideas_request_started": {
       return {
         ...state,
-        status: "requesting_ideas",
+        loading: true,
         error: null,
         editingId: null,
       };
     }
     case "ideas_request_successful": {
       return {
-        status: "idle",
+        ...state,
+        loading: false,
         error: null,
         editingId: null,
         ideas: action.ideas,
@@ -92,23 +67,22 @@ export const reducer = (state: IdeasState, action: IdeasAction): IdeasState => {
     case "ideas_request_failed": {
       return {
         ...state,
-        status: "requesting_ideas_error",
+        loading: false,
         error: action.error,
         editingId: null,
       };
     }
     case "idea_added": {
       return {
-        status: "idle",
-        error: null,
+        ...state,
+        addingIdea: false,
         editingId: null,
         ideas: [action.idea, ...state.ideas],
       };
     }
     case "idea_removed": {
       return {
-        status: "idle",
-        error: null,
+        ...state,
         editingId: null,
         ideas: state.ideas.filter((idea) => idea.id !== action.id),
       };
@@ -117,8 +91,8 @@ export const reducer = (state: IdeasState, action: IdeasAction): IdeasState => {
       const index = state.ideas.findIndex((idea) => idea.id === action.idea.id);
 
       return {
-        status: "idle",
-        error: null,
+        ...state,
+        addingIdea: false,
         editingId: null,
         ideas: [
           ...state.ideas.slice(0, index),
@@ -130,7 +104,7 @@ export const reducer = (state: IdeasState, action: IdeasAction): IdeasState => {
     case "draft_idea_created": {
       return {
         ...state,
-        status: "adding_idea",
+        addingIdea: true,
         error: null,
         editingId: null,
       };
@@ -138,7 +112,7 @@ export const reducer = (state: IdeasState, action: IdeasAction): IdeasState => {
     case "editing_started": {
       return {
         ...state,
-        status: "editing_idea",
+        addingIdea: false,
         error: null,
         editingId: action.id,
       };
@@ -146,8 +120,8 @@ export const reducer = (state: IdeasState, action: IdeasAction): IdeasState => {
     case "editing_cancelled": {
       return {
         ...state,
-        status: "idle",
         error: null,
+        addingIdea: false,
         editingId: null,
       };
     }

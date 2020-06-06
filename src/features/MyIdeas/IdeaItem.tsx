@@ -8,6 +8,7 @@ import binImg from "../../assets/bin@2x.png";
 
 import { useIdeasContext, getIdea } from "./IdeasContext";
 import { BaseCell } from "./BaseCell";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 const EndCell = styled(BaseCell)`
   opacity: 0;
@@ -47,7 +48,7 @@ const ContentCell = styled(Cell)`
 const Dimmer = styled.div<{ row: number }>(
   ({ row }) => css`
     grid-area: ${row} / 1 / ${row + 1} / -1;
-    background-color: #fff;
+    background-color: var(--background);
     opacity: 0.5;
     pointer-events: none;
   `,
@@ -62,6 +63,9 @@ export const IdeaItem = ({ id, row }: Props) => {
   const [state, dispatch] = useIdeasContext();
   const [deleting, setDeleting] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
+
+  const openDialog = () => setShowDialog(true);
+  const closeDialog = () => setShowDialog(false);
 
   const idea = getIdea(state, id);
 
@@ -103,7 +107,7 @@ export const IdeaItem = ({ id, row }: Props) => {
         </IconButton>
         <IconButton
           aria-label="Remove"
-          onClick={removeIdea}
+          onClick={openDialog}
           css={`
             margin-left: 12px;
           `}
@@ -112,6 +116,13 @@ export const IdeaItem = ({ id, row }: Props) => {
         </IconButton>
       </EndCell>
       {deleting && <Dimmer row={row} />}
+      {showDialog && (
+        <ConfirmDialog
+          onConfirm={removeIdea}
+          onDismiss={closeDialog}
+          submitting={deleting}
+        />
+      )}
     </>
   );
 };
